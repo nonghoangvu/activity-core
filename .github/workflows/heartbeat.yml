@@ -2,7 +2,7 @@ name: Daily Heartbeat
 
 on:
   schedule:
-    - cron: "* * * * *"   # chạy mỗi phút
+    - cron: "* * * * *"
   workflow_dispatch:
 
 permissions:
@@ -20,9 +20,9 @@ jobs:
         run: |
           echo "Last update: $(date -u)" > heartbeat.log
 
-      - name: Random author
+      - name: Random real GitHub author
         run: |
-          names=("dev-alpha" "dev-beta" "dev-gamma" "build-system" "scheduler-bot" "ops-service" "infra-agent" "data-sync" "release-agent" "monitor-bot" "core-sync" "pipeline-runner")
+          names=("octocat" "torvalds" "github" "vercel" "denoland" "hashicorp" "microsoft" "google" "docker" "apple" "python" "ruby" "golang" "kubernetes" "homebrew" "reactjs" "vuejs" "angular" "sindresorhus" "facebook")
           rand=$((RANDOM % ${#names[@]}))
           echo "AUTHOR_NAME=${names[$rand]}" >> $GITHUB_ENV
           echo "AUTHOR_EMAIL=${names[$rand]}@users.noreply.github.com" >> $GITHUB_ENV
@@ -31,7 +31,6 @@ jobs:
         run: |
           git config user.name "${AUTHOR_NAME}"
           git config user.email "${AUTHOR_EMAIL}"
-
           git add heartbeat.log
-          git commit -m "chore: heartbeat update by ${AUTHOR_NAME}" || echo "No changes"
+          git commit -m "chore: heartbeat by ${AUTHOR_NAME}" || echo "No changes"
           git push
