@@ -20,10 +20,16 @@ jobs:
         run: |
           echo "Last update: $(date -u)" > heartbeat.log
 
+      - name: Random author
+        run: |
+          authors=("system.core" "ops.engine" "build.service" "sync.daemon" "auto.scheduler")
+          rand=$((RANDOM % ${#authors[@]}))
+          echo "AUTHOR=${authors[$rand]}" >> $GITHUB_ENV
+
       - name: Commit changes
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "${AUTHOR}"
+          git config user.email "${AUTHOR}@automation.local"
           git add heartbeat.log
-          git commit -m "chore: daily heartbeat [ci skip]" || echo "No changes"
+          git commit -m "chore: heartbeat updated by ${AUTHOR}" || echo "No changes"
           git push
