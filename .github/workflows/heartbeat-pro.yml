@@ -1,0 +1,71 @@
+name: Heartbeat PRO
+
+on:
+  schedule:
+    - cron: "* * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare log folder
+        run: mkdir -p heartbeat/logs
+
+      - name: Generate random commit message
+        run: |
+          msgs=("sync heartbeat" "system maintenance" "update internal state" "refresh activity log" "json log update" "automated system pulse" "runtime health check" "background sync" "ops monitoring event" "auto status update")
+          rand=$((RANDOM % ${#msgs[@]}))
+          echo "COMMIT_MSG=${msgs[$rand]}" >> $GITHUB_ENV
+
+      - name: Select real GitHub author
+        run: |
+          authors=("octocat" "torvalds" "github" "vercel" "denoland" "hashicorp" "microsoft" "google" "docker" "apple" "python" "ruby" "golang" "kubernetes" "reactjs" "vuejs" "angular" "homebrew" "sindresorhus" "facebook")
+          rand=$((RANDOM % ${#authors[@]}))
+          echo "AUTHOR_NAME=${authors[$rand]}" >> $GITHUB_ENV
+          echo "AUTHOR_EMAIL=${authors[$rand]}@users.noreply.github.com" >> $GITHUB_ENV
+
+      - name: Generate heartbeat JSON
+        run: |
+          ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          file="heartbeat/logs/heartbeat-$(date -u +"%Y-%m-%d_%H-%M-%S").json"
+          echo "{
+            \"timestamp\": \"$ts\",
+            \"author\": \"${AUTHOR_NAME}\",
+            \"message\": \"${COMMIT_MSG}\"
+          }" > $file
+
+          cp $file heartbeat/logs/heartbeat-latest.json
+
+      - name: Update dashboard README
+        run: |
+          count=$(ls heartbeat/logs | wc -l)
+          last=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          echo "# 🔥 Heartbeat PRO Dashboard" > heartbeat/README.md
+          echo "" >> heartbeat/README.md
+          echo "- **Last update:** $last" >> heartbeat/README.md
+          echo "- **Total records:** $count" >> heartbeat/README.md
+          echo "- **Latest author:** ${AUTHOR_NAME}" >> heartbeat/README.md
+          echo "- **Message:** ${COMMIT_MSG}" >> heartbeat/README.md
+          echo "" >> heartbeat/README.md
+          echo "## 📄 Latest Log" >> heartbeat/README.md
+          echo '```json' >> heartbeat/README.md
+          cat heartbeat/logs/heartbeat-latest.json >> heartbeat/README.md
+          echo '```' >> heartbeat/README.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "${AUTHOR_NAME}"
+          git config user.email "${AUTHOR_EMAIL}"
+
+          git add heartbeat/
+          git commit -m "chore: ${COMMIT_MSG} by ${AUTHOR_NAME}" || echo "No changes"
+          git push
