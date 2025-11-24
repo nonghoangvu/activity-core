@@ -27,7 +27,7 @@ jobs:
 
       - name: Select real GitHub author
         run: |
-          authors=("octocat" "torvalds" "github" "vercel" "denoland" "hashicorp" "microsoft" "google" "docker" "apple" "python" "ruby" "golang" "kubernetes" "reactjs" "vuejs" "angular" "homebrew" "sindresorhus" "facebook")
+          authors=("NongVu04", "octocat" "torvalds" "github" "vercel" "denoland" "hashicorp" "microsoft" "google" "docker" "apple" "python" "ruby" "golang" "kubernetes" "reactjs" "vuejs" "angular" "homebrew" "sindresorhus" "facebook")
           rand=$((RANDOM % ${#authors[@]}))
           echo "AUTHOR_NAME=${authors[$rand]}" >> $GITHUB_ENV
           echo "AUTHOR_EMAIL=${authors[$rand]}@users.noreply.github.com" >> $GITHUB_ENV
@@ -63,8 +63,8 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config user.name NongVu04
-          git config user.email "nonghoangvu2004@gmail.com"
+          git config user.name ${AUTHOR_NAME}"
+          git config user.email "${AUTHOR_EMAIL}"
 
           git add heartbeat/
           git commit -m "chore: ${COMMIT_MSG} by NongVu04 || echo "No changes"
